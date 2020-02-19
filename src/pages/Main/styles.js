@@ -11,6 +11,14 @@ export const Form = styled.form`
     padding: 10px 15px;
     border-radius: 4px;
     font-size: 16px;
+
+    &[error] {
+      border: 2px solid #e30000;
+      color: #e30000;
+      &::placeholder {
+        color: #e30000;
+      }
+    }
   }
 `;
 
