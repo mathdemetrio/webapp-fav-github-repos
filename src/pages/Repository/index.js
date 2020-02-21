@@ -1,10 +1,17 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from 'react-icons/fa';
 import api from '../../services/api';
 
 import Container from '../../components/Container';
-import { Loading, Owner, IssuesList } from './styles';
+import {
+  Loading,
+  Owner,
+  IssuesList,
+  StatusFilter,
+  PageControl,
+} from './styles';
 
 export default class Repository extends Component {
   static propTypes = {
@@ -19,10 +26,13 @@ export default class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    filter: 'all',
+    page: 1,
   };
 
   async componentDidMount() {
     const { match } = this.props;
+    const { filter, page } = this.state;
 
     const repoName = decodeURIComponent(match.params.repository);
 
@@ -30,8 +40,9 @@ export default class Repository extends Component {
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`, {
         params: {
-          state: 'open',
+          state: filter,
           per_page: 5,
+          page,
         },
       }),
     ]);
@@ -43,8 +54,47 @@ export default class Repository extends Component {
     });
   }
 
+  getIssues = async () => {
+    const { match } = this.props;
+    const { filter, page } = this.state;
+
+    const repoName = decodeURIComponent(match.params.repository);
+
+    const response = await api.get(`/repos/${repoName}/issues`, {
+      params: {
+        state: filter,
+        per_page: 5,
+        page,
+      },
+    });
+
+    this.setState({
+      issues: response.data,
+    });
+  };
+
+  handleFilter = async filter => {
+    await this.setState({
+      filter,
+      page: 1,
+    });
+
+    this.getIssues();
+  };
+
+  handlePage = async action => {
+    const { page } = this.state;
+    if (action === 'next') {
+      await this.setState({ page: page + 1 });
+    } else if (action === 'prev') {
+      await this.setState({ page: page - 1 });
+    }
+
+    this.getIssues();
+  };
+
   render() {
-    const { repository, issues, loading } = this.state;
+    const { repository, issues, loading, page, filter } = this.state;
 
     if (loading) {
       return <Loading>Carregando...</Loading>;
@@ -60,6 +110,29 @@ export default class Repository extends Component {
         </Owner>
 
         <IssuesList>
+          <StatusFilter>
+            <button
+              type="button"
+              onClick={() => this.handleFilter('all')}
+              disabled={filter === 'all'}
+            >
+              Todos
+            </button>
+            <button
+              type="button"
+              onClick={() => this.handleFilter('open')}
+              disabled={filter === 'open'}
+            >
+              Abertos
+            </button>
+            <button
+              type="button"
+              onClick={() => this.handleFilter('closed')}
+              disabled={filter === 'closed'}
+            >
+              Fechados
+            </button>
+          </StatusFilter>
           {issues.map(issue => (
             <li key={String(issue.id)}>
               <img src={issue.user.avatar_url} alt={issue.user.login} />
@@ -81,6 +154,20 @@ export default class Repository extends Component {
             </li>
           ))}
         </IssuesList>
+
+        <PageControl>
+          <button
+            type="button"
+            disabled={page < 2}
+            onClick={() => this.handlePage('prev')}
+          >
+            <FaArrowAltCircleLeft size={20} />
+          </button>
+          <span>Página {page}</span>
+          <button type="button" onClick={() => this.handlePage('next')}>
+            <FaArrowAltCircleRight size={20} />
+          </button>
+        </PageControl>
       </Container>
     );
   }

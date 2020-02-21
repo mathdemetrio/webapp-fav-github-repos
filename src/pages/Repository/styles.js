@@ -104,3 +104,56 @@ export const IssuesList = styled.ul`
     }
   }
 `;
+
+export const StatusFilter = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+
+  button {
+    font-weight: bold;
+    padding: 3px 5px;
+    max-width: 150px;
+    width: 100%;
+    margin: 0 5px;
+    border-radius: 4px;
+    border: 2px solid #7159c1;
+    background: none;
+    &[disabled] {
+      background: #7159c1;
+      color: #fff;
+      cursor: not-allowed;
+    }
+  }
+`;
+
+export const PageControl = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+
+  button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 4px;
+    background: none;
+    border: none;
+    margin: 0 10px;
+
+    &[disabled] {
+      opacity: 0.7;
+    }
+
+    svg {
+      color: #7159c1;
+    }
+  }
+
+  span {
+    font-size: 12px;
+    font-weight: 600;
+  }
+`;

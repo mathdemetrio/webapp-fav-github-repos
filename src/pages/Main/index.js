@@ -40,11 +40,17 @@ export default class Main extends Component {
   handleSubmit = async e => {
     e.preventDefault();
 
-    this.setState({ loading: true });
-
-    const { newRepo, repositories } = this.state;
+    this.setState({ loading: true, error: false });
 
     try {
+      const { newRepo, repositories } = this.state;
+
+      if (newRepo === '')
+        throw new Error('è necessário informar um repositório');
+
+      if (repositories.find(r => r.name === newRepo))
+        throw new Error('Repositório duplicado');
+
       const response = await api.get(`/repos/${newRepo}`);
       const data = {
         name: response.data.full_name,
@@ -57,7 +63,9 @@ export default class Main extends Component {
         error: false,
       });
     } catch (error) {
-      this.setState({ loading: false, error: true });
+      this.setState({ error: true });
+    } finally {
+      this.setState({ loading: false });
     }
   };
 
@@ -78,7 +86,7 @@ export default class Main extends Component {
             onChange={this.handleInputChange}
           />
 
-          <SubmitButton loading={loading ? 'true' : undefined}>
+          <SubmitButton loading={loading ? 1 : 0}>
             {loading ? (
               <FaSpinner color="#fff" size={14} />
             ) : (
